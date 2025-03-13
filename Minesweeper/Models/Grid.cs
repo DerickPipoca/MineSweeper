@@ -4,27 +4,29 @@ namespace Minesweeper.Models
 {
     public class Grid
     {
-        private readonly int BombAmount = 0;
+        private int BombAmount = 0;
         private List<Vector2> VerifiedPlaces = [];
         private List<Vector2> AvoidBombPlaces = [];
-        private bool FirstPlay = true;
-        private bool Playing = true;
+        private bool FirstPlay = false;
+        private bool FirstGame = true;
+        private bool Playing = false;
         private bool Won = false;
         private bool Defeat = false;
 
         public string ErrorMessage = String.Empty;
         public int Size { get; set; }
-        public List<Land> Lands { get; set; }
+        public List<Land> Lands { get; set; } = [];
 
-        public Grid(int size)
+        public Grid()
         {
-            Size = size;
-            BombAmount = (int)MathF.Pow(size, 2) / 8;
-            Lands = [];
         }
 
-        public void GenerateNew()
+        public void GenerateNew(int size)
         {
+            Won = false;
+            Defeat = false;
+            Size = size;
+            BombAmount = (int)MathF.Pow(size, 2) / 8;
             Lands = [];
             for (int i = 0; i < Size; i++)
             {
@@ -50,7 +52,7 @@ namespace Minesweeper.Models
                 }
                 else
                 {
-                    System.Console.BackgroundColor = ConsoleColor.Magenta;
+                    System.Console.BackgroundColor = ConsoleColor.Blue;
                 }
                 System.Console.Write(i + freeSpace);
                 System.Console.BackgroundColor = ConsoleColor.Black;
@@ -67,7 +69,7 @@ namespace Minesweeper.Models
                 }
                 else
                 {
-                    System.Console.BackgroundColor = ConsoleColor.Magenta;
+                    System.Console.BackgroundColor = ConsoleColor.Blue;
                 }
                 System.Console.Write((i + 1) + freeSpace);
                 System.Console.BackgroundColor = ConsoleColor.Black;
@@ -83,9 +85,9 @@ namespace Minesweeper.Models
             }
             string message = "Para verificar campo: '2,7'\nPara colocar bandeira: F2,2";
             if (Defeat)
-                message = "Você perdeu!";
+                message = "Você perdeu!\nPressione qualquer botão para reiniciar";
             if (Won)
-                message = "Você venceu!!!!";
+                message = "Você venceu!!!!\nPressione qualquer botão para reiniciar";
             System.Console.WriteLine(message);
         }
 
@@ -101,9 +103,7 @@ namespace Minesweeper.Models
                         string[] prompt = answer.Split(',');
                         int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
                         Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                        if (FirstPlay)
-                            AddBombs(coordinates);
-                        FirstPlay = false;
+
                         ProcessPromptAnswer(coordinates);
                     }
                     else
@@ -131,15 +131,22 @@ namespace Minesweeper.Models
                 }
                 else
                 {
-                    string[] prompt = answer.Split(',');
-                    int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
-                    Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                    Won = false;
-                    Defeat = false;
-                    GenerateNew();
-                    AddBombs(coordinates);
-                    ProcessPromptAnswer(coordinates);
-                    Playing = true;
+                    if (!Defeat && !Won)
+                    {
+                        string[] prompt = answer.Split(',');
+                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
+                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
+
+                        AddBombs(coordinates);
+                        ProcessPromptAnswer(coordinates);
+                        Playing = true;
+                    }
+                    else
+                    {
+                        FirstPlay = true;
+                        GameInitialization();
+                    }
+
                 }
             }
             catch (Exception)
@@ -157,6 +164,40 @@ namespace Minesweeper.Models
                 System.Console.WriteLine(ErrorMessage);
                 System.Console.ForegroundColor = ConsoleColor.White;
                 ErrorMessage = String.Empty;
+            }
+        }
+
+        public void GameInitialization()
+        {
+            if (FirstGame
+            || FirstPlay)
+            {
+                FirstPlay = true;
+                while (FirstPlay)
+                {
+                    System.Console.Clear();
+                    System.Console.WriteLine("Insira o tamanho da grid: (min 8; max 32)");
+
+                    try
+                    {
+                        string answer = System.Console.ReadLine()!;
+                        if (int.TryParse(answer, out int number))
+                        {
+                            if (number >= 8
+                            && number <= 32)
+                            {
+                                GenerateNew(number);
+                                FirstGame = false;
+                                FirstPlay = false;
+                                System.Console.Clear();
+                            }
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
+                }
             }
         }
 

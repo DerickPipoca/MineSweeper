@@ -42,7 +42,7 @@ namespace Minesweeper.Models
                     }
                     else
                     {
-                        color = ConsoleColor.DarkGreen;
+                        color = ConsoleColor.DarkYellow;
                         icon = bombsAmount.ToString();
 
                     }
