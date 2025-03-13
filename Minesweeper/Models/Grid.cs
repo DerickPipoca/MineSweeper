@@ -4,15 +4,16 @@ namespace Minesweeper.Models
 {
     public class Grid
     {
+        private readonly int BombAmount = 0;
         private List<Vector2> VerifiedPlaces = [];
         private List<Vector2> AvoidBombPlaces = [];
         private bool FirstPlay = true;
         private bool Playing = true;
         private bool Won = false;
         private bool Defeat = false;
+
         public string ErrorMessage = String.Empty;
         public int Size { get; set; }
-        private readonly int BombAmount = 0;
         public List<Land> Lands { get; set; }
 
         public Grid(int size)
@@ -21,6 +22,7 @@ namespace Minesweeper.Models
             BombAmount = (int)MathF.Pow(size, 2) / 8;
             Lands = [];
         }
+
         public void GenerateNew()
         {
             Lands = [];
@@ -32,54 +34,6 @@ namespace Minesweeper.Models
                     Lands.Add(land);
                 }
             }
-        }
-
-        private void AddBombAvoidList(Vector2 coord)
-        {
-            if (IsValidPlace(coord))
-                AvoidBombPlaces.Add(coord);
-        }
-
-        private void CreateBombsAvoidList(Vector2 coords)
-        {
-
-            AvoidBombPlaces = [];
-
-            var coord = new Vector2(coords.X - 1, coords.Y - 1);
-
-            AddBombAvoidList(new Vector2(coords.X - 1, coords.Y - 1));
-            AddBombAvoidList(new Vector2(coords.X, coords.Y - 1));
-            AddBombAvoidList(new Vector2(coords.X + 1, coords.Y - 1));
-            AddBombAvoidList(new Vector2(coords.X - 1, coords.Y));
-            AddBombAvoidList(new Vector2(coords.X, coords.Y));
-            AddBombAvoidList(new Vector2(coords.X + 1, coords.Y));
-            AddBombAvoidList(new Vector2(coords.X - 1, coords.Y + 1));
-            AddBombAvoidList(new Vector2(coords.X, coords.Y + 1));
-            AddBombAvoidList(new Vector2(coords.X + 1, coords.Y + 1));
-        }
-
-        private void AddBombs(Vector2 coords)
-        {
-            CreateBombsAvoidList(coords);
-
-            int bombs = 0;
-            do
-            {
-                var rnd = new Random();
-                int x = rnd.Next(0, Size - 1);
-                rnd = new Random();
-                int y = rnd.Next(0, Size - 1);
-
-                var land = Lands.FirstOrDefault(l => l.Coordinate == new Vector2(x, y));
-
-                if (land != null
-                && land.Bomb == false
-                && !AvoidBombPlaces.Contains(land.Coordinate))
-                {
-                    land.Bomb = true;
-                    bombs++;
-                }
-            } while (bombs < BombAmount);
         }
 
         public void DrawGame()
@@ -135,6 +89,66 @@ namespace Minesweeper.Models
             System.Console.WriteLine(message);
         }
 
+        public void Prompt(string answer)
+        {
+            try
+            {
+                if (Playing)
+                {
+                    if (answer[0] != 'F'
+                    && answer[0] != 'f')
+                    {
+                        string[] prompt = answer.Split(',');
+                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
+                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
+                        if (FirstPlay)
+                            AddBombs(coordinates);
+                        FirstPlay = false;
+                        ProcessPromptAnswer(coordinates);
+                    }
+                    else
+                    {
+                        answer = answer.Substring(1);
+                        string[] prompt = answer.Split(',');
+                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
+                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
+                        if (IsValidPlace(coordinates))
+                        {
+                            var land = Lands.FirstOrDefault(x => x.Coordinate == coordinates);
+
+                            if (land != null
+                            && !land.Revealed)
+                            {
+                                land.Flag = !land.Flag;
+                            }
+                        }
+                    }
+                    if (!Defeat && IsGameWon())
+                    {
+                        Win();
+                    }
+                    VerifiedPlaces = [];
+                }
+                else
+                {
+                    string[] prompt = answer.Split(',');
+                    int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
+                    Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
+                    Won = false;
+                    Defeat = false;
+                    GenerateNew();
+                    AddBombs(coordinates);
+                    ProcessPromptAnswer(coordinates);
+                    Playing = true;
+                }
+            }
+            catch (Exception)
+            {
+                ErrorMessage = $"ERRO: '{answer}' não é um comando válido!";
+            }
+
+        }
+
         public int VerifyBombsSides(Vector2 coordinate)
         {
             int amount = 0;
@@ -167,19 +181,52 @@ namespace Minesweeper.Models
             return false;
         }
 
-        public bool IsNumeral(Vector2 coordinate)
+        private void AddBombAvoidList(Vector2 coord)
         {
-            if (IsValidPlace(coordinate))
-            {
-                var land = Lands.FirstOrDefault(x => x.Coordinate == coordinate);
+            if (IsValidPlace(coord))
+                AvoidBombPlaces.Add(coord);
+        }
 
-                if (land != null)
+        private void CreateBombsAvoidList(Vector2 coords)
+        {
+
+            AvoidBombPlaces = [];
+
+            var coord = new Vector2(coords.X - 1, coords.Y - 1);
+
+            AddBombAvoidList(new Vector2(coords.X - 1, coords.Y - 1));
+            AddBombAvoidList(new Vector2(coords.X, coords.Y - 1));
+            AddBombAvoidList(new Vector2(coords.X + 1, coords.Y - 1));
+            AddBombAvoidList(new Vector2(coords.X - 1, coords.Y));
+            AddBombAvoidList(new Vector2(coords.X, coords.Y));
+            AddBombAvoidList(new Vector2(coords.X + 1, coords.Y));
+            AddBombAvoidList(new Vector2(coords.X - 1, coords.Y + 1));
+            AddBombAvoidList(new Vector2(coords.X, coords.Y + 1));
+            AddBombAvoidList(new Vector2(coords.X + 1, coords.Y + 1));
+        }
+
+        private void AddBombs(Vector2 coords)
+        {
+            CreateBombsAvoidList(coords);
+
+            int bombs = 0;
+            do
+            {
+                var rnd = new Random();
+                int x = rnd.Next(0, Size - 1);
+                rnd = new Random();
+                int y = rnd.Next(0, Size - 1);
+
+                var land = Lands.FirstOrDefault(l => l.Coordinate == new Vector2(x, y));
+
+                if (land != null
+                && land.Bomb == false
+                && !AvoidBombPlaces.Contains(land.Coordinate))
                 {
-                    if (VerifyBombsSides(land.Coordinate) > 0)
-                        return true;
+                    land.Bomb = true;
+                    bombs++;
                 }
-            }
-            return false;
+            } while (bombs < BombAmount);
         }
 
         private void Show8Sides(Vector2 coordinate)
@@ -268,66 +315,6 @@ namespace Minesweeper.Models
                     ShowSide(coordinates);
                 }
             }
-        }
-
-        internal void Prompt(string answer)
-        {
-            try
-            {
-                if (Playing)
-                {
-                    if (answer[0] != 'F'
-                    && answer[0] != 'f')
-                    {
-                        string[] prompt = answer.Split(',');
-                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
-                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                        if (FirstPlay)
-                            AddBombs(coordinates);
-                        FirstPlay = false;
-                        ProcessPromptAnswer(coordinates);
-                    }
-                    else
-                    {
-                        answer = answer.Substring(1);
-                        string[] prompt = answer.Split(',');
-                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
-                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                        if (IsValidPlace(coordinates))
-                        {
-                            var land = Lands.FirstOrDefault(x => x.Coordinate == coordinates);
-
-                            if (land != null
-                            && !land.Revealed)
-                            {
-                                land.Flag = !land.Flag;
-                            }
-                        }
-                    }
-                    if (!Defeat && IsGameWon())
-                    {
-                        Win();
-                    }
-                    VerifiedPlaces = [];
-                }
-                else
-                {
-                    string[] prompt = answer.Split(',');
-                    int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
-                    Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                    Won = false;
-                    Defeat = false;
-                    GenerateNew();
-                    AddBombs(coordinates);
-                    ProcessPromptAnswer(coordinates);
-                    Playing = true;
-                }
-            }
-            catch (Exception)
-            {
-                ErrorMessage = $"ERRO: '{answer}' não é um comando válido!";
-            }
-
         }
     }
 }
