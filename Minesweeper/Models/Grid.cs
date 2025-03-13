@@ -36,7 +36,7 @@ namespace Minesweeper.Models
 
         private void AddBombAvoidList(Vector2 coord)
         {
-            if (isValidPlace(coord))
+            if (IsValidPlace(coord))
                 AvoidBombPlaces.Add(coord);
         }
 
@@ -169,7 +169,7 @@ namespace Minesweeper.Models
 
         public bool IsNumeral(Vector2 coordinate)
         {
-            if (isValidPlace(coordinate))
+            if (IsValidPlace(coordinate))
             {
                 var land = Lands.FirstOrDefault(x => x.Coordinate == coordinate);
 
@@ -205,7 +205,7 @@ namespace Minesweeper.Models
 
         private void ShowSide(Vector2 coordinate)
         {
-            if (isValidPlace(coordinate)
+            if (IsValidPlace(coordinate)
             && !VerifiedPlaces.Contains(coordinate))
             {
                 var land = Lands.FirstOrDefault(x => x.Coordinate == coordinate);
@@ -221,7 +221,7 @@ namespace Minesweeper.Models
             }
         }
 
-        private bool isValidPlace(Vector2 coordinate)
+        private bool IsValidPlace(Vector2 coordinate)
         {
             if (coordinate.X >= Size
             || coordinate.Y >= Size
@@ -255,7 +255,7 @@ namespace Minesweeper.Models
 
         private void ProcessPromptAnswer(Vector2 coordinates)
         {
-            if (isValidPlace(coordinates))
+            if (IsValidPlace(coordinates))
             {
                 var land = Lands.FirstOrDefault(x => x.Coordinate == coordinates);
 
@@ -293,7 +293,7 @@ namespace Minesweeper.Models
                     string[] prompt = answer.Split(',');
                     int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
                     Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                    if (isValidPlace(coordinates))
+                        if (IsValidPlace(coordinates))
                     {
                         var land = Lands.FirstOrDefault(x => x.Coordinate == coordinates);
 
