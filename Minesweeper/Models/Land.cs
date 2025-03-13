@@ -35,7 +35,7 @@ namespace Minesweeper.Models
                 }
                 else
                 {
-                    int bombsAmount = VerifyBombsSides(grid);
+                    int bombsAmount = grid.VerifyBombsSides(Coordinate);
                     if (bombsAmount == 0)
                     {
                         icon = "■";
@@ -61,25 +61,5 @@ namespace Minesweeper.Models
             System.Console.Write(write);
             System.Console.BackgroundColor = ConsoleColor.Black;
         }
-
-        public int VerifyBombsSides(Grid grid)
-        {
-
-            int amount = 0;
-            if (grid.BombPlaced(Coordinate + new Vector2(-1, -1))) amount++;
-            if (grid.BombPlaced(Coordinate + new Vector2(0, -1))) amount++;
-            if (grid.BombPlaced(Coordinate + new Vector2(1, -1))) amount++;
-
-            if (grid.BombPlaced(Coordinate + new Vector2(-1, 0))) amount++;
-            if (grid.BombPlaced(Coordinate + new Vector2(1, 0))) amount++;
-
-            if (grid.BombPlaced(Coordinate + new Vector2(-1, 1))) amount++;
-            if (grid.BombPlaced(Coordinate + new Vector2(0, 1))) amount++;
-            if (grid.BombPlaced(Coordinate + new Vector2(1, 1))) amount++;
-
-            return amount;
-        }
-
-
     }
 }

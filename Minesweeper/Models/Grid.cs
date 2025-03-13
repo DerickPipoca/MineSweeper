@@ -135,6 +135,23 @@ namespace Minesweeper.Models
             System.Console.WriteLine(message);
         }
 
+        public int VerifyBombsSides(Vector2 coordinate)
+        {
+            int amount = 0;
+            if (BombPlaced(coordinate + new Vector2(-1, -1))) amount++;
+            if (BombPlaced(coordinate + new Vector2(0, -1))) amount++;
+            if (BombPlaced(coordinate + new Vector2(1, -1))) amount++;
+
+            if (BombPlaced(coordinate + new Vector2(-1, 0))) amount++;
+            if (BombPlaced(coordinate + new Vector2(1, 0))) amount++;
+
+            if (BombPlaced(coordinate + new Vector2(-1, 1))) amount++;
+            if (BombPlaced(coordinate + new Vector2(0, 1))) amount++;
+            if (BombPlaced(coordinate + new Vector2(1, 1))) amount++;
+
+            return amount;
+        }
+
         public bool BombPlaced(Vector2 coordinate)
         {
             if (isValidPlace(coordinate))
@@ -158,7 +175,7 @@ namespace Minesweeper.Models
 
                 if (land != null)
                 {
-                    if (land.VerifyBombsSides(this) > 0)
+                    if (VerifyBombsSides(land.Coordinate) > 0)
                         return true;
                 }
             }
@@ -195,7 +212,7 @@ namespace Minesweeper.Models
                 if (land != null)
                 {
                     land.Revealed = true;
-                    if (land.VerifyBombsSides(this) == 0)
+                    if (VerifyBombsSides(land.Coordinate) == 0)
                     {
                         VerifiedPlaces.Add(land.Coordinate);
                         Show8Sides(coordinate);
