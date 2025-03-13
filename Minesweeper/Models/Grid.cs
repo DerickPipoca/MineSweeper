@@ -274,53 +274,54 @@ namespace Minesweeper.Models
         {
             try
             {
-            if (Playing)
-            {
-                if (answer[0] != 'F'
-                && answer[0] != 'f')
+                if (Playing)
                 {
-                    string[] prompt = answer.Split(',');
-                    int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
-                    Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                    if (FirstPlay)
-                        AddBombs(coordinates);
-                    FirstPlay = false;
-                    ProcessPromptAnswer(coordinates);
+                    if (answer[0] != 'F'
+                    && answer[0] != 'f')
+                    {
+                        string[] prompt = answer.Split(',');
+                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
+                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
+                        if (FirstPlay)
+                            AddBombs(coordinates);
+                        FirstPlay = false;
+                        ProcessPromptAnswer(coordinates);
+                    }
+                    else
+                    {
+                        answer = answer.Substring(1);
+                        string[] prompt = answer.Split(',');
+                        int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
+                        Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
+                        if (IsValidPlace(coordinates))
+                        {
+                            var land = Lands.FirstOrDefault(x => x.Coordinate == coordinates);
+
+                            if (land != null
+                            && !land.Revealed)
+                            {
+                                land.Flag = !land.Flag;
+                            }
+                        }
+                    }
+                    if (!Defeat && IsGameWon())
+                    {
+                        Win();
+                    }
+                    VerifiedPlaces = [];
                 }
                 else
                 {
-                    answer = answer.Substring(1);
                     string[] prompt = answer.Split(',');
                     int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
                     Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                        if (IsValidPlace(coordinates))
-                    {
-                        var land = Lands.FirstOrDefault(x => x.Coordinate == coordinates);
-
-                        if (land != null)
-                        {
-                            land.Flag = !land.Flag;
-                        }
-                    }
+                    Won = false;
+                    Defeat = false;
+                    GenerateNew();
+                    AddBombs(coordinates);
+                    ProcessPromptAnswer(coordinates);
+                    Playing = true;
                 }
-                if (!Defeat && IsGameWon())
-                {
-                    Win();
-                }
-                VerifiedPlaces = [];
-            }
-            else
-            {
-                string[] prompt = answer.Split(',');
-                int[] convPrompt = [int.Parse(prompt[0]) - 1, int.Parse(prompt[1]) - 1];
-                Vector2 coordinates = new(convPrompt[0], convPrompt[1]);
-                Won = false;
-                Defeat = false;
-                GenerateNew();
-                AddBombs(coordinates);
-                ProcessPromptAnswer(coordinates);
-                Playing = true;
-            }
             }
             catch (Exception)
             {
