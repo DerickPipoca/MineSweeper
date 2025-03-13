@@ -10,6 +10,7 @@ namespace Minesweeper.Models
         private bool Playing = true;
         private bool Won = false;
         private bool Defeat = false;
+        public string ErrorMessage = String.Empty;
         public int Size { get; set; }
         private readonly int BombAmount = 0;
         public List<Land> Lands { get; set; }
@@ -254,6 +255,8 @@ namespace Minesweeper.Models
 
         internal void Prompt(string answer)
         {
+            try
+            {
             if (Playing)
             {
                 if (answer[0] != 'F'
@@ -301,6 +304,12 @@ namespace Minesweeper.Models
                 ProcessPromptAnswer(coordinates);
                 Playing = true;
             }
+            }
+            catch (Exception)
+            {
+                ErrorMessage = $"ERRO: '{answer}' não é um comando válido!";
+            }
+
         }
     }
 }
