@@ -149,6 +149,17 @@ namespace Minesweeper.Models
 
         }
 
+        public void ShowErrorMessage()
+        {
+            if (ErrorMessage != String.Empty)
+            {
+                System.Console.ForegroundColor = ConsoleColor.Red;
+                System.Console.WriteLine(ErrorMessage);
+                System.Console.ForegroundColor = ConsoleColor.White;
+                ErrorMessage = String.Empty;
+            }
+        }
+
         public int VerifyBombsSides(Vector2 coordinate)
         {
             int amount = 0;
