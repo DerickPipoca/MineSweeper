@@ -154,7 +154,7 @@ namespace Minesweeper.Models
 
         public bool BombPlaced(Vector2 coordinate)
         {
-            if (isValidPlace(coordinate))
+            if (IsValidPlace(coordinate))
             {
                 var land = Lands.FirstOrDefault(x => x.Coordinate == coordinate);
 
@@ -236,9 +236,9 @@ namespace Minesweeper.Models
         private void Defeated()
         {
             Playing = false;
+            Defeat = true;
             foreach (var land in Lands)
             {
-                Defeat = true;
                 land.Revealed = true;
             }
         }
@@ -246,9 +246,9 @@ namespace Minesweeper.Models
         private void Win()
         {
             Playing = false;
+            Won = true;
             foreach (var land in Lands)
             {
-                Won = true;
                 land.Revealed = true;
             }
         }
